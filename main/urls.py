@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from django.contrib.auth.decorators import login_required
 
 from .views import LinkList, LinkCreate, LinkDetail, CommentList
-
+from .rss import LatestLinksFeed
 
 urlpatterns = patterns("",
     url("^$",
@@ -33,4 +33,5 @@ urlpatterns = patterns("",
     url("^users/(?P<username>.*)/comments/$",
         CommentList.as_view(), {"by_score": False},
         name="comment_list_user"),
+    url("^rss/$", LatestLinksFeed())
 )
