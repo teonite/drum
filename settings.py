@@ -1,6 +1,9 @@
-
 from mezzanine.project_template.settings import *
 import os
+from datetime import timedelta
+
+import djcelery
+djcelery.setup_loader()
 
 # Paths
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +28,12 @@ INSTALLED_APPS = (
     "mezzanine.core",
     "mezzanine.generic",
     "mezzanine.accounts",
+    #for celery msg broker                                                                                                                                               
+    'kombu.transport.django',
+
+    "djcelery",
+    "django_mailbox",
+    "mail_reader"
 )
 
 MIDDLEWARE_CLASSES = (["mezzanine.core.middleware.UpdateCacheMiddleware"] +
@@ -40,12 +49,46 @@ RATINGS_ACCOUNT_REQUIRED = True
 COMMENTS_ACCOUNT_REQUIRED = True
 ACCOUNTS_PROFILE_VIEWS_ENABLED = True
 
+# Celery
+
+# Broker
+BROKER_URL = "django://"
+
+# List of modules to import when celery starts.                                                                                                                          
+CELERY_IMPORTS = ("mail_reader.tasks", )
+
+# Using the database to store task state and results.                                                                                                                   
+CELERY_RESULT_BACKEND = "database"
+CELERY_RESULT_DBURI = "sqlite:///dev.db"
+
+CELERY_TIMEZONE = 'UTC'
+TIME_ZONE = 'Europe/London'
+
+CELERY_ANNOTATIONS = {
+    "tasks.checkMail": {"rate_limit": "10/s"}
+
+}
+
+CELERYBEAT_SCHEDULE = {
+    'check-mail-every-10-minutes': {
+        'task': 'mail_reader.tasks.checkMail',
+        'schedule': timedelta(seconds=10),
+        'args': ()
+    },
+}
+
 # Drum
 ALLOWED_DUPLICATE_LINK_HOURS = 24 * 7 * 3
 ITEMS_PER_PAGE = 20
 
+# External settings imports
 try:
     from local_settings import *
+except ImportError:
+    pass
+
+try:
+    from logger_settings import *
 except ImportError:
     pass
 

@@ -1,7 +1,7 @@
 
 DEBUG = True
 
-SECRET_KEY = ""
+SECRET_KEY = "YOUR_SECRET_KEY"
 
 DATABASES = {
     "default": {
@@ -18,4 +18,20 @@ DATABASES = {
         # Set to empty string for default. Not used with sqlite3.
         "PORT": "",
     }
+}
+
+MAIL_CONFIG = {
+
+	# mailbox name - can be any string
+    "name": "MAILBOX_NAME",
+
+    # mailbox uri for django-mailbox, read more here:
+    # http://django-mailbox.readthedocs.org/en/latest/topics/mailbox_types.html#pop3-and-imap-mailboxes
+    "uri": "MAILBOX_URI"
+}
+
+# dict of user email -> system username 
+# to specify which user sent given email
+USER_EMAILS = {
+	"user1@example.com": "username"
 }
