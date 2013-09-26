@@ -1,0 +1,1 @@
+User {{user}} added new link to TNT HackerNews. See it here: {{url}}.

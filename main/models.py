@@ -1,13 +1,17 @@
-from time import time
 from urlparse import urlparse
 
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.urlresolvers import reverse
+from django.contrib.sites.models import get_current_site
 
 from mezzanine.core.models import Displayable, Ownable
 from mezzanine.generic.models import Rating
 from mezzanine.generic.fields import RatingField, CommentsField
+
+from notification import models as notification
 
 
 class Link(Displayable, Ownable):
@@ -52,3 +56,19 @@ def karma(sender, **kwargs):
     if rating.user != content_object.user:
         queryset = Profile.objects.filter(user=content_object.user)
         queryset.update(karma=models.F("karma") + value)
+
+@receiver(post_save, sender=Link)
+def notify(sender, **kwargs):
+    """
+    Notifies users about new link by email
+    """
+    users = User.objects.all()
+    link = kwargs['instance']
+    
+    url = ''.join(['http://', get_current_site(None).domain, reverse('link_detail', kwargs={'slug': link.slug})]) 
+    
+    notification.send(users, "new_link", 
+                      {'user': link.user.username, 
+                       'url': url})
+    
+    

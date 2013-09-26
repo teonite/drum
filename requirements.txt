@@ -3,6 +3,7 @@ django-compressor
 django-extensions
 django-celery
 django-mailbox
+django-notification
 feedparser
 gunicorn
 psycopg2

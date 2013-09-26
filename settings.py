@@ -33,7 +33,8 @@ INSTALLED_APPS = (
 
     "djcelery",
     "django_mailbox",
-    "mail_reader"
+    "mail_reader",
+    "notification"
 )
 
 MIDDLEWARE_CLASSES = (["mezzanine.core.middleware.UpdateCacheMiddleware"] +
@@ -80,6 +81,9 @@ CELERYBEAT_SCHEDULE = {
 # Drum
 ALLOWED_DUPLICATE_LINK_HOURS = 24 * 7 * 3
 ITEMS_PER_PAGE = 20
+
+# django-notification
+NOTIFICATION_QUEUE_ALL = False
 
 # External settings imports
 try:
