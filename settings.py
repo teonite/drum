@@ -73,7 +73,7 @@ CELERY_ANNOTATIONS = {
 CELERYBEAT_SCHEDULE = {
     'check-mail-every-10-minutes': {
         'task': 'mail_reader.tasks.checkMail',
-        'schedule': timedelta(seconds=10),
+        'schedule': timedelta(seconds=60),
         'args': ()
     },
 }

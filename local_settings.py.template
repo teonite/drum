@@ -37,9 +37,3 @@ MAIL_CONFIG = {
     # http://django-mailbox.readthedocs.org/en/latest/topics/mailbox_types.html#pop3-and-imap-mailboxes
     "uri": "MAILBOX_URI"
 }
-
-# dict of user email -> system username 
-# to specify which user sent given email
-USER_EMAILS = {
-	"user1@example.com": "username"
-}

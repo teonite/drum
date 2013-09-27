@@ -6,12 +6,15 @@ from settings import MAIL_CONFIG
 import re
 from main.models import Link
 from django.contrib.auth.models import User
-import settings
 
 logger = logging.getLogger(__name__)
 
 @task()
 def checkMail():
+    """
+    Celery task: checks mailbox for new emails with links.
+    If found, adds links to db.
+    """
     logger.debug("Checking for new mail")
     boxes = Mailbox.objects.filter(name=MAIL_CONFIG["name"])
     if boxes.count() == 0:
@@ -22,35 +25,34 @@ def checkMail():
 
     logger.debug("Retrieving new mail from mailbox: " + mailBox.name)        
     newMessages = mailBox.get_new_mail()
+
     if newMessages:
         logger.info('[' + mailBox.name + '] Got new messages: ' + str(newMessages))
     
     for msg in newMessages:
-        
         # find user for given email address
-        username = settings.USER_EMAILS.get(msg.from_address[0], None)
-        if not username:
+        try:
+            user = User.objects.get(email=msg.from_address[0])
+        except User.DoesNotExist:
             logger.warning('Got email from unknown user: ' + msg.from_address[0] + '. Ignoring.')
             continue
-        
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            logger.error('User ' + username + ' does not exist, check your settings.USER_EMAILS configuration')
-            continue
-        
+
         # extract url from message
-        url = re.search("(?P<url>https?://[^\s]+)", msg.body)
+        url = re.search("(?P<url>https?://[^\s]+)", msg.get_text_body())
         if url:
             url = url.group("url")
         else:
-            logger.warning('Got email without url from user: ' + username + '. Ignoring.')
+            logger.warning('Got email without url from user: ' + user.username + '. Ignoring.')
             continue
         
         # extract description from message        
-        description = re.sub(r'^https?:\/\/.*[\r\n]*', '', msg.body, flags=re.MULTILINE)
+        description = re.sub(r'https?:\/\/[^\s]+', '', msg.get_text_body(), flags=re.MULTILINE)
+
         link = Link(user=user, title=msg.subject, link=url, description=description)
+        
+        # don't let mezzanine screw up our description
+        link.gen_description = False
 
         link.save()
-        logger.info('User ' + username + ' added new link: ' + url)
+        logger.info('User ' + user.username + ' added new link by email: ' + url)
         
